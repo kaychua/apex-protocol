@@ -3,28 +3,26 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Plus, Trash2, TrendingUp, Dumbbell, Clock, RotateCcw, ChevronDown, ChevronRight, Flame } from 'lucide-react'
 
 const POWER_MOVES = [
-  { id: 'iron_x', name: 'Iron X', type: 'hold', unit: 'seconds', emoji: '⚡' },
-  { id: 'round_worlds', name: 'Round the Worlds', type: 'reps', unit: 'rotations', emoji: '🌀' },
-  { id: 'deadlift', name: 'Deadlift Ayesha', type: 'hold', unit: 'seconds', emoji: '💀' },
-  { id: 'brass_monkey', name: 'Brass Monkey', type: 'hold', unit: 'seconds', emoji: '🔱' },
-  { id: 'handspring', name: 'Handspring Mount', type: 'reps', unit: 'clean reps', emoji: '🤸' },
-  { id: 'chopper', name: 'Chopper', type: 'reps', unit: 'reps', emoji: '✂️' },
-  { id: 'superman', name: 'Superman', type: 'hold', unit: 'seconds', emoji: '🦸' },
-  { id: 'flag', name: 'Flag (Human Flag)', type: 'hold', unit: 'seconds', emoji: '🚩' },
+  { id: 'iron_x', name: 'Iron X', type: 'hold', unit: 'seconds' },
+  { id: 'round_worlds', name: 'Round the Worlds', type: 'reps', unit: 'rotations' },
+  { id: 'deadlift', name: 'Deadlift Ayesha', type: 'hold', unit: 'seconds' },
+  { id: 'brass_monkey', name: 'Brass Monkey', type: 'hold', unit: 'seconds' },
+  { id: 'handspring', name: 'Handspring Mount', type: 'reps', unit: 'clean reps' },
+  { id: 'chopper', name: 'Chopper', type: 'reps', unit: 'reps' },
+  { id: 'superman', name: 'Superman', type: 'hold', unit: 'seconds' },
+  { id: 'flag', name: 'Flag (Human Flag)', type: 'hold', unit: 'seconds' },
 ]
 
 const CONTORTION_MOVES = [
-  { id: 'needle', name: 'Needle Point', type: 'hold', unit: 'seconds', emoji: '🎯' },
-  { id: 'oversplit_l', name: 'Over-Split Left', type: 'hold', unit: 'seconds + angle', emoji: '📐' },
-  { id: 'oversplit_r', name: 'Over-Split Right', type: 'hold', unit: 'seconds + angle', emoji: '📐' },
-  { id: 'back_walkover', name: 'Back Walkover', type: 'reps', unit: 'clean reps', emoji: '🌙' },
-  { id: 'chest_stand', name: 'Chest Stand', type: 'hold', unit: 'seconds', emoji: '🎪' },
-  { id: 'spine_fold', name: 'Full Spine Fold', type: 'hold', unit: 'seconds', emoji: '🌿' },
-  { id: 'needle_stand', name: 'Standing Needle', type: 'hold', unit: 'seconds', emoji: '⬆️' },
-  { id: 'scorpion', name: 'Scorpion', type: 'hold', unit: 'seconds', emoji: '🦂' },
+  { id: 'needle', name: 'Needle Point', type: 'hold', unit: 'seconds' },
+  { id: 'oversplit_l', name: 'Over-Split Left', type: 'hold', unit: 'seconds + angle' },
+  { id: 'oversplit_r', name: 'Over-Split Right', type: 'hold', unit: 'seconds + angle' },
+  { id: 'back_walkover', name: 'Back Walkover', type: 'reps', unit: 'clean reps' },
+  { id: 'chest_stand', name: 'Chest Stand', type: 'hold', unit: 'seconds' },
+  { id: 'spine_fold', name: 'Full Spine Fold', type: 'hold', unit: 'seconds' },
+  { id: 'needle_stand', name: 'Standing Needle', type: 'hold', unit: 'seconds' },
+  { id: 'scorpion', name: 'Scorpion', type: 'hold', unit: 'seconds' },
 ]
-
-const EMOJI_OPTIONS = ['⭐','🌟','💪','🎯','✨','🔥','💫','🌸','🦋','💎','🏆','🎪','🌺','⚡','🌙']
 
 function calcTUT(sets) {
   return sets.reduce((total, s) => total + (s.reps || 1) * (s.value || 0), 0)
@@ -51,7 +49,6 @@ function SetLogger({ move, entries, onAdd, onDelete, onDeleteMove, isCustom }) {
     <motion.div layout className="card" style={{ marginBottom: 8 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}
         onClick={() => setOpen(o => !o)}>
-        <span style={{ fontSize: 20 }}>{move.emoji}</span>
         <div style={{ flex: 1 }}>
           <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 6 }}>
             {move.name}
@@ -142,7 +139,7 @@ function SetLogger({ move, entries, onAdd, onDelete, onDeleteMove, isCustom }) {
 }
 
 function AddMoveForm({ onAdd, onCancel }) {
-  const [form, setForm] = useState({ name: '', type: 'hold', unit: 'seconds', emoji: '⭐' })
+  const [form, setForm] = useState({ name: '', type: 'hold', unit: 'seconds' })
 
   const handle = () => {
     if (!form.name.trim()) return
@@ -169,7 +166,7 @@ function AddMoveForm({ onAdd, onCancel }) {
                   background: form.type === t ? 'var(--neon-cyan-dim)' : 'rgba(255,255,255,0.5)',
                   color: form.type === t ? 'var(--neon-cyan)' : 'var(--text-muted)',
                   border: `1px solid ${form.type === t ? 'var(--neon-cyan)' : 'var(--border)'}`,
-                }}>{t === 'hold' ? '⏱ Hold' : '🔁 Reps'}</button>
+                }}>{t === 'hold' ? 'Hold' : 'Reps'}</button>
               ))}
             </div>
           </div>
@@ -177,22 +174,6 @@ function AddMoveForm({ onAdd, onCancel }) {
 
         <input className="input" placeholder={`Unit label (e.g. ${form.type === 'hold' ? 'seconds' : 'clean reps'})`}
           value={form.unit} onChange={e => setForm(p => ({ ...p, unit: e.target.value }))} />
-
-        <div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>EMOJI</div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-            {EMOJI_OPTIONS.map(e => (
-              <button key={e} onClick={() => setForm(p => ({ ...p, emoji: e }))} style={{
-                width: 34, height: 34, borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 18,
-                background: form.emoji === e ? 'var(--neon-cyan-dim)' : 'rgba(255,255,255,0.6)',
-                border: `1px solid ${form.emoji === e ? 'var(--neon-cyan)' : 'var(--border)'}`,
-              }}>{e}</button>
-            ))}
-            <input className="input" style={{ width: 70, fontSize: 18, textAlign: 'center', padding: '4px 8px' }}
-              placeholder="✏️" value={form.emoji.length > 2 ? '' : form.emoji}
-              onChange={e => setForm(p => ({ ...p, emoji: e.target.value }))} maxLength={4} />
-          </div>
-        </div>
 
         <div style={{ display: 'flex', gap: 8 }}>
           <button className="btn btn-cyan" onClick={handle}><Plus size={13} /> ADD MOVE</button>
