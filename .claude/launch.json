@@ -1,0 +1,15 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "apex-protocol",
+      "runtimeExecutable": "/bin/sh",
+      "runtimeArgs": ["-c", "PATH=/Users/sh0072/.ScreamingFrogSEOSpider/node/5.4/node/bin:$PATH npm run dev"],
+      "port": 5173,
+      "autoPort": true,
+      "env": {
+        "PATH": "/Users/sh0072/.ScreamingFrogSEOSpider/node/5.4/node/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+      }
+    }
+  ]
+}
