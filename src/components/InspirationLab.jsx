@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, Trash2, Link, Heart, Image, Palette, X, ExternalLink } from 'lucide-react'
+import { Plus, Trash2, Link, Heart, Image, Palette, X, ExternalLink, Globe } from 'lucide-react'
 
 const PRESET_PALETTES = [
   ['#ff00a8','#9d4edd','#00f5ff','#0a0a0f'],
@@ -53,6 +53,30 @@ function InspirationCard({ item, onDelete }) {
 }
 
 function MoodBoardItem({ item, onDelete }) {
+  if (item.type === 'link') {
+    let hostname = item.value
+    try { hostname = new URL(item.value).hostname.replace('www.', '') } catch {}
+    return (
+      <motion.div layout initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
+        style={{ position: 'relative', borderRadius: 8, overflow: 'hidden', aspectRatio: '1',
+          border: '1px solid var(--neon-cyan)', background: 'linear-gradient(135deg, rgba(224,71,158,0.12), rgba(155,111,232,0.12))' }}>
+        <a href={item.value} target="_blank" rel="noopener noreferrer"
+          style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+            width: '100%', height: '100%', textDecoration: 'none', padding: 8, gap: 4 }}>
+          <Globe size={18} style={{ color: 'var(--neon-cyan)' }} />
+          <div style={{ fontSize: 9, color: 'var(--text-secondary)', textAlign: 'center', wordBreak: 'break-all', lineHeight: 1.3 }}>
+            {item.label || hostname}
+          </div>
+        </a>
+        <button onClick={onDelete} style={{
+          position: 'absolute', top: 4, right: 4, background: 'rgba(255,255,255,0.85)',
+          border: 'none', borderRadius: '50%', width: 20, height: 20, cursor: 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--neon-magenta)',
+        }}><X size={10} /></button>
+      </motion.div>
+    )
+  }
+
   const isColor = item.type === 'color'
   return (
     <motion.div layout initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
@@ -98,6 +122,8 @@ export default function InspirationLab() {
   const [colorInput, setColorInput] = useState('#ff00a8')
   const [imgUrl, setImgUrl] = useState('')
   const [imgLabel, setImgLabel] = useState('')
+  const [boardLinkUrl, setBoardLinkUrl] = useState('')
+  const [boardLinkLabel, setBoardLinkLabel] = useState('')
 
   const saveLinks = (data) => { setLinks(data); localStorage.setItem('inspirationLinks', JSON.stringify(data)) }
   const saveBoard = (data) => { setBoard(data); localStorage.setItem('moodBoard', JSON.stringify(data)) }
@@ -119,6 +145,12 @@ export default function InspirationLab() {
     if (!imgUrl.trim()) return
     saveBoard([...board, { id: Date.now(), type: 'image', value: imgUrl, label: imgLabel }])
     setImgUrl(''); setImgLabel('')
+  }
+
+  const addBoardLink = () => {
+    if (!boardLinkUrl.trim()) return
+    saveBoard([...board, { id: Date.now(), type: 'link', value: boardLinkUrl, label: boardLinkLabel }])
+    setBoardLinkUrl(''); setBoardLinkLabel('')
   }
 
   return (
@@ -216,6 +248,14 @@ export default function InspirationLab() {
               <input className="input" placeholder="https://... (image URL)" value={imgUrl} onChange={e => setImgUrl(e.target.value)} />
               <input className="input" placeholder="Label (optional)" value={imgLabel} onChange={e => setImgLabel(e.target.value)} />
               <button className="btn btn-purple" onClick={addImage}><Image size={13} /> ADD TO BOARD</button>
+            </div>
+
+            {/* Link to board */}
+            <div className="card" style={{ marginBottom: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: '0.1em' }}>ADD LINK TO BOARD</div>
+              <input className="input" placeholder="https://... (any URL)" value={boardLinkUrl} onChange={e => setBoardLinkUrl(e.target.value)} />
+              <input className="input" placeholder="Label (optional, e.g. Inspo reel)" value={boardLinkLabel} onChange={e => setBoardLinkLabel(e.target.value)} />
+              <button className="btn btn-cyan" onClick={addBoardLink}><Globe size={13} /> ADD LINK</button>
             </div>
 
             {/* Board grid */}

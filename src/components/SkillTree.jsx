@@ -3,13 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronRight, ChevronDown, Plus, Trash2, Target, Star,
          CheckCircle2, Circle, Zap, Pencil, Check, X } from 'lucide-react'
 
-const PALETTE = [
-  'var(--neon-cyan)', 'var(--neon-magenta)', 'var(--neon-purple)',
-  'var(--neon-green)', 'var(--neon-amber)',
-]
-
-const DEFAULT_CATEGORIES = {
-  'Pole Foundations': {
+// Shared array format: [{ name, color, tricks: [{ id, name, level }] }]
+export const DEFAULT_CATEGORIES = [
+  {
+    name: 'Pole Foundations',
     color: 'var(--neon-cyan)',
     tricks: [
       { id: 'pf1', name: 'Fireman Spin', level: 'beginner' },
@@ -24,7 +21,8 @@ const DEFAULT_CATEGORIES = {
       { id: 'pf10', name: 'Iron X', level: 'elite' },
     ]
   },
-  'Elite Flex Tricks': {
+  {
+    name: 'Elite Flex Tricks',
     color: 'var(--neon-magenta)',
     tricks: [
       { id: 'ef1', name: 'Jade Split', level: 'intermediate' },
@@ -37,7 +35,8 @@ const DEFAULT_CATEGORIES = {
       { id: 'ef8', name: 'Brass Monkey', level: 'elite' },
     ]
   },
-  'Contortion': {
+  {
+    name: 'Contortion',
     color: 'var(--neon-purple)',
     tricks: [
       { id: 'co1', name: 'Standing Backbend', level: 'beginner' },
@@ -52,7 +51,7 @@ const DEFAULT_CATEGORIES = {
       { id: 'co10', name: 'Scorpion (Standing)', level: 'elite' },
     ]
   }
-}
+]
 
 const LEVEL_STYLES = {
   beginner:     { color: 'var(--neon-green)',   label: 'Foundation', bg: 'var(--neon-green-dim)' },
@@ -61,14 +60,23 @@ const LEVEL_STYLES = {
   elite:        { color: 'var(--neon-magenta)', label: 'Elite',      bg: 'var(--neon-magenta-dim)' },
 }
 
-function loadCategories() {
+export function loadCategories() {
   try {
     const s = localStorage.getItem('skillCategories')
-    return s ? JSON.parse(s) : DEFAULT_CATEGORIES
+    if (!s) return DEFAULT_CATEGORIES
+    const parsed = JSON.parse(s)
+    // Migrate old object format { 'Name': { color, tricks } } → array
+    if (!Array.isArray(parsed)) {
+      const COLORS = ['var(--neon-cyan)','var(--neon-magenta)','var(--neon-purple)','var(--neon-green)','var(--neon-amber)']
+      return Object.entries(parsed).map(([name, data], i) => ({
+        name, color: data.color || COLORS[i % COLORS.length], tricks: data.tricks || []
+      }))
+    }
+    return parsed
   } catch { return DEFAULT_CATEGORIES }
 }
 
-function saveCategories(data) {
+export function saveCategories(data) {
   localStorage.setItem('skillCategories', JSON.stringify(data))
 }
 
@@ -77,7 +85,7 @@ function TrickRow({ trick, catColor, mastered, onToggle, onSave, onDelete }) {
   const [editing, setEditing] = useState(false)
   const [name, setName] = useState(trick.name)
   const [level, setLevel] = useState(trick.level)
-  const lvl = LEVEL_STYLES[trick.level]
+  const lvl = LEVEL_STYLES[trick.level] || LEVEL_STYLES.beginner
 
   const commit = () => { onSave({ ...trick, name, level }); setEditing(false) }
   const cancel = () => { setName(trick.name); setLevel(trick.level); setEditing(false) }
@@ -134,13 +142,14 @@ function TrickRow({ trick, catColor, mastered, onToggle, onSave, onDelete }) {
 }
 
 // ── Category branch ───────────────────────────────────────────────────────────
-function CategoryBranch({ name, data, mastered, onToggle, onUpdateTrick, onDeleteTrick, onAddTrick }) {
+function CategoryBranch({ cat, mastered, onToggle, onUpdateTrick, onDeleteTrick, onAddTrick }) {
   const [open, setOpen] = useState(true)
   const [showAdd, setShowAdd] = useState(false)
   const [newTrick, setNewTrick] = useState({ name: '', level: 'intermediate' })
 
-  const pct = data.tricks.length
-    ? Math.round((data.tricks.filter(t => mastered[t.id]).length / data.tricks.length) * 100) : 0
+  const { name, color, tricks } = cat
+  const pct = tricks.length
+    ? Math.round((tricks.filter(t => mastered[t.id]).length / tricks.length) * 100) : 0
 
   const handleAdd = () => {
     if (!newTrick.name.trim()) return
@@ -153,13 +162,13 @@ function CategoryBranch({ name, data, mastered, onToggle, onUpdateTrick, onDelet
     <motion.div layout style={{ marginBottom: 10 }}>
       <div onClick={() => setOpen(o => !o)} style={{ display: 'flex', alignItems: 'center', gap: 10,
         padding: '10px 14px', background: 'rgba(255,255,255,0.75)', backdropFilter: 'blur(12px)',
-        border: `1px solid ${data.color}30`, borderRadius: 14, cursor: 'pointer', userSelect: 'none' }}>
-        <span style={{ flex: 1, fontFamily: 'var(--font-display)', fontSize: 13, fontWeight: 700, color: data.color }}>{name}</span>
+        border: `1px solid ${color}30`, borderRadius: 14, cursor: 'pointer', userSelect: 'none' }}>
+        <span style={{ flex: 1, fontFamily: 'var(--font-display)', fontSize: 13, fontWeight: 700, color }}>{name}</span>
         <span style={{ fontSize: 11, color: 'var(--text-secondary)', fontWeight: 700 }}>
-          {data.tricks.filter(t => mastered[t.id]).length}/{data.tricks.length}
+          {tricks.filter(t => mastered[t.id]).length}/{tricks.length}
         </span>
         <div style={{ width: 44, height: 4, background: 'var(--bg-deep)', borderRadius: 2, overflow: 'hidden' }}>
-          <div style={{ width: `${pct}%`, height: '100%', background: data.color, borderRadius: 2, transition: 'width 0.4s' }} />
+          <div style={{ width: `${pct}%`, height: '100%', background: color, borderRadius: 2, transition: 'width 0.4s' }} />
         </div>
         {open ? <ChevronDown size={14} style={{ color: 'var(--text-muted)' }} />
                : <ChevronRight size={14} style={{ color: 'var(--text-muted)' }} />}
@@ -169,23 +178,22 @@ function CategoryBranch({ name, data, mastered, onToggle, onUpdateTrick, onDelet
         {open && (
           <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }} style={{ overflow: 'hidden', paddingLeft: 8,
-              paddingTop: 6, borderLeft: `2px solid ${data.color}25`, marginLeft: 12 }}>
-            {data.tricks.map(trick => (
-              <TrickRow key={trick.id} trick={trick} catColor={data.color}
+              paddingTop: 6, borderLeft: `2px solid ${color}25`, marginLeft: 12 }}>
+            {tricks.map(trick => (
+              <TrickRow key={trick.id} trick={trick} catColor={color}
                 mastered={!!mastered[trick.id]}
                 onToggle={() => onToggle(trick.id)}
                 onSave={(updated) => onUpdateTrick(trick.id, updated)}
                 onDelete={() => onDeleteTrick(trick.id)} />
             ))}
 
-            {/* Inline add form */}
             <AnimatePresence>
               {showAdd && (
                 <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }} style={{ overflow: 'hidden' }}>
                   <div style={{ display: 'flex', gap: 6, padding: '6px 0', flexWrap: 'wrap' }}>
                     <input className="input" style={{ flex: 2, minWidth: 140, fontSize: 13 }}
-                      placeholder="Trick name…" value={newTrick.name}
+                      placeholder="Trick name" value={newTrick.name}
                       onChange={e => setNewTrick(p => ({ ...p, name: e.target.value }))}
                       onKeyDown={e => e.key === 'Enter' && handleAdd()} autoFocus />
                     <select className="input" style={{ flex: 1, minWidth: 110, fontSize: 12 }}
@@ -206,8 +214,8 @@ function CategoryBranch({ name, data, mastered, onToggle, onUpdateTrick, onDelet
             {!showAdd && (
               <button onClick={() => setShowAdd(true)} style={{ display: 'flex', alignItems: 'center',
                 gap: 6, marginTop: 4, marginBottom: 6, background: 'none',
-                border: `1px dashed ${data.color}50`, borderRadius: 10, padding: '6px 12px',
-                cursor: 'pointer', width: '100%', color: data.color, fontSize: 12,
+                border: `1px dashed ${color}50`, borderRadius: 10, padding: '6px 12px',
+                cursor: 'pointer', width: '100%', color, fontSize: 12,
                 fontWeight: 600, fontFamily: 'var(--font-body)', opacity: 0.8 }}>
                 <Plus size={12} /> Add trick to {name}
               </button>
@@ -219,7 +227,7 @@ function CategoryBranch({ name, data, mastered, onToggle, onUpdateTrick, onDelet
   )
 }
 
-// ── Goal row with inline editing ──────────────────────────────────────────────
+// ── Goal row ──────────────────────────────────────────────────────────────────
 function GoalRow({ goal, onSave, onDelete, onToggleDone }) {
   const [editing, setEditing] = useState(false)
   const [form, setForm] = useState({ name: goal.name, source: goal.source || '', notes: goal.notes || '' })
@@ -235,7 +243,7 @@ function GoalRow({ goal, onSave, onDelete, onToggleDone }) {
             onChange={e => setForm(p => ({ ...p, name: e.target.value }))} autoFocus />
           <input className="input" placeholder="Source / where you saw it" value={form.source}
             onChange={e => setForm(p => ({ ...p, source: e.target.value }))} />
-          <textarea className="input" placeholder="Notes…" value={form.notes}
+          <textarea className="input" placeholder="Notes" value={form.notes}
             onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} />
           <div style={{ display: 'flex', gap: 8 }}>
             <button className="btn btn-cyan" onClick={commit}><Check size={13} /> Save</button>
@@ -297,24 +305,21 @@ export default function SkillTree() {
     localStorage.setItem('skillMastered', JSON.stringify(next))
   }
 
-  const updateTrick = (catName, trickId, updated) => {
-    const next = { ...categories }
-    next[catName] = { ...next[catName], tricks: next[catName].tricks.map(t => t.id === trickId ? updated : t) }
-    persistCats(next)
+  const updateTrick = (catIdx, trickId, updated) => {
+    persistCats(categories.map((c, i) => i !== catIdx ? c
+      : { ...c, tricks: c.tricks.map(t => t.id === trickId ? updated : t) }))
   }
 
-  const deleteTrick = (catName, trickId) => {
-    const next = { ...categories }
-    next[catName] = { ...next[catName], tricks: next[catName].tricks.filter(t => t.id !== trickId) }
+  const deleteTrick = (catIdx, trickId) => {
+    persistCats(categories.map((c, i) => i !== catIdx ? c
+      : { ...c, tricks: c.tricks.filter(t => t.id !== trickId) }))
     const m = { ...mastered }; delete m[trickId]
     setMastered(m); localStorage.setItem('skillMastered', JSON.stringify(m))
-    persistCats(next)
   }
 
-  const addTrick = (catName, trick) => {
-    const next = { ...categories }
-    next[catName] = { ...next[catName], tricks: [...next[catName].tricks, trick] }
-    persistCats(next)
+  const addTrick = (catIdx, trick) => {
+    persistCats(categories.map((c, i) => i !== catIdx ? c
+      : { ...c, tricks: [...c.tricks, trick] }))
   }
 
   const saveGoals = (data) => { setGoals(data); localStorage.setItem('goalList', JSON.stringify(data)) }
@@ -324,12 +329,11 @@ export default function SkillTree() {
     setNewGoal({ name: '', notes: '', source: '' }); setShowGoalForm(false)
   }
 
-  const totalTricks = Object.values(categories).reduce((a, c) => a + c.tricks.length, 0)
+  const totalTricks = categories.reduce((a, c) => a + c.tricks.length, 0)
   const totalMastered = Object.values(mastered).filter(Boolean).length
 
   return (
     <div style={{ padding: '0 0 80px' }}>
-      {/* Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 16 }}>
         {[
           { label: 'Mastered', value: totalMastered, color: 'var(--neon-cyan)' },
@@ -343,7 +347,6 @@ export default function SkillTree() {
         ))}
       </div>
 
-      {/* Sub-tabs */}
       <div style={{ display: 'flex', gap: 4, marginBottom: 16, background: 'rgba(255,255,255,0.6)',
         padding: 4, borderRadius: 14, border: '1px solid var(--border)' }}>
         {[{ id: 'tree', label: 'Skill Tree', icon: <Zap size={12} /> },
@@ -363,12 +366,12 @@ export default function SkillTree() {
       <AnimatePresence mode="wait">
         {tab === 'tree' ? (
           <motion.div key="tree" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-            {Object.entries(categories).map(([name, data]) => (
-              <CategoryBranch key={name} name={name} data={data} mastered={mastered}
+            {categories.map((cat, idx) => (
+              <CategoryBranch key={cat.name} cat={cat} mastered={mastered}
                 onToggle={toggleMaster}
-                onUpdateTrick={(id, updated) => updateTrick(name, id, updated)}
-                onDeleteTrick={(id) => deleteTrick(name, id)}
-                onAddTrick={(trick) => addTrick(name, trick)} />
+                onUpdateTrick={(id, updated) => updateTrick(idx, id, updated)}
+                onDeleteTrick={(id) => deleteTrick(idx, id)}
+                onAddTrick={(trick) => addTrick(idx, trick)} />
             ))}
             <div style={{ textAlign: 'center', marginTop: 8 }}>
               <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
@@ -391,7 +394,7 @@ export default function SkillTree() {
                       onChange={e => setNewGoal(p => ({ ...p, name: e.target.value }))} autoFocus />
                     <input className="input" placeholder="Source / where you saw it" value={newGoal.source}
                       onChange={e => setNewGoal(p => ({ ...p, source: e.target.value }))} />
-                    <textarea className="input" placeholder="Notes…" value={newGoal.notes}
+                    <textarea className="input" placeholder="Notes" value={newGoal.notes}
                       onChange={e => setNewGoal(p => ({ ...p, notes: e.target.value }))} />
                     <div style={{ display: 'flex', gap: 8 }}>
                       <button className="btn btn-magenta" onClick={addGoal}><Plus size={13} /> Save</button>

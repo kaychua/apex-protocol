@@ -1,29 +1,26 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Zap, Heart, Dumbbell, Shield, Wind, Settings } from 'lucide-react'
+import { Zap, Dumbbell, Wind, User, Calendar } from 'lucide-react'
 import SkillTree from './components/SkillTree'
-import InspirationLab from './components/InspirationLab'
+import Schedule from './components/Schedule'
 import StrengthLog from './components/StrengthLog'
-import Mastery from './components/Mastery'
 import FreestyleStamina from './components/FreestyleStamina'
-import SettingsPanel from './components/Settings'
+import Profile from './components/Profile'
 
 const TABS = [
-  { id: 'skills',    label: 'SKILL TREE', icon: Zap,      color: 'var(--neon-cyan)',    short: 'Skills' },
-  { id: 'lab',       label: 'INSPO LAB',  icon: Heart,    color: 'var(--neon-magenta)', short: 'Inspo' },
-  { id: 'strength',  label: 'STRENGTH',   icon: Dumbbell, color: 'var(--neon-amber)',   short: 'Lift' },
-  { id: 'mastery',   label: 'MASTERY',    icon: Shield,   color: 'var(--neon-purple)',  short: 'Master' },
-  { id: 'freestyle', label: 'FREESTYLE',  icon: Wind,     color: 'var(--neon-green)',   short: 'Flow' },
-  { id: 'settings',  label: 'SETTINGS',   icon: Settings, color: 'var(--text-secondary)', short: 'Settings' },
+  { id: 'skills',   label: 'SKILL TREE', icon: Zap,      color: 'var(--neon-cyan)',    short: 'Skills' },
+  { id: 'schedule', label: 'SCHEDULE',   icon: Calendar, color: 'var(--neon-purple)',  short: 'Schedule' },
+  { id: 'strength', label: 'STRENGTH',   icon: Dumbbell, color: 'var(--neon-amber)',   short: 'Strength' },
+  { id: 'flow',     label: 'FREESTYLE',  icon: Wind,     color: 'var(--neon-green)',   short: 'Flow' },
+  { id: 'profile',  label: 'PROFILE',    icon: User,     color: 'var(--neon-magenta)', short: 'Profile' },
 ]
 
 const COMPONENTS = {
-  skills:    SkillTree,
-  lab:       InspirationLab,
-  strength:  StrengthLog,
-  mastery:   Mastery,
-  freestyle: FreestyleStamina,
-  settings:  SettingsPanel,
+  skills:   SkillTree,
+  schedule: Schedule,
+  strength: StrengthLog,
+  flow:     FreestyleStamina,
+  profile:  Profile,
 }
 
 export default function App() {
@@ -46,8 +43,7 @@ export default function App() {
           <div>
             <div style={{
               fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 700,
-              fontStyle: 'italic', color: 'var(--neon-cyan)', letterSpacing: '-0.01em',
-              lineHeight: 1,
+              fontStyle: 'italic', color: 'var(--neon-cyan)', letterSpacing: '-0.01em', lineHeight: 1,
             }}>
               Pole Kitten
             </div>
@@ -86,7 +82,7 @@ export default function App() {
         </AnimatePresence>
       </main>
 
-      {/* Bottom nav — 6 tabs */}
+      {/* Bottom nav */}
       <nav style={{
         position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 100,
         background: 'rgba(253, 242, 248, 0.92)',
@@ -121,10 +117,10 @@ export default function App() {
                   background: active ? `${tab.color}14` : 'transparent',
                   transition: 'background 0.18s',
                 }}>
-                  <Icon size={17} />
+                  <Icon size={18} />
                 </div>
                 <span style={{
-                  fontSize: 8.5, fontFamily: 'var(--font-body)',
+                  fontSize: 9, fontFamily: 'var(--font-body)',
                   fontWeight: active ? 800 : 500, letterSpacing: '0.04em', marginTop: 1,
                 }}>{tab.short.toUpperCase()}</span>
               </motion.button>
